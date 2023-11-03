@@ -1,4 +1,6 @@
 <?php
+require_once '../config/config.php';
+
 // 引数で与えられた配列を基にプルダウンリストを精製する
 function arrayToSelect($inputName, $srcArray, $selectedIndex = "") {
   $temphtml = "<select class=\"form-select\" name=\"{$inputName}\">".PHP_EOL;
