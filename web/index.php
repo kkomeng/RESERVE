@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   }
 
   // TODO:予約日はプルダウン設定値を決定後にバリデーション実装
-  
+
   if (!$reserve_num) {
     $err['reserve_num'] = '人数を入力してください。';
   } else if (!preg_match('/^[0-9]+$/', $reserve_num)) {
@@ -132,7 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ご来店予約</title>
   <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
   <!-- Original CSS -->
   <link href="../css/style.css" rel="stylesheet">
 </head>
@@ -146,7 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="mb-3">
       <label for="exampleFormControlInput1" class="form-label">【1】 予約日を選択</label>
       <?= arrayToSelect('reserve_date', $reserve_date_array, $reserve_date) ?>
-      <div class="invalid-feedback"><?= $err['reserve_date'] ?></div>
+      <div class="invalid-feedback">
+        <?= $err['reserve_date'] ?>
+      </div>
     </div>
     <div class="mb-3">
       <label for="exampleFormControlInput1" class="form-label">【2】 人数を選択</label>
@@ -158,21 +161,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
     <div class="mb-3">
       <label for="exampleFormControlInput1" class="form-label">【4】 予約者情報を入力</label>
-      <input type="text" class="form-control <?php if (isset($err['name'])) echo 'is-invalid' ?>"" name=" name" placeholder="氏名" value="<?= $name ?>">
-      <div class="invalid-feedback"><?= $err['name'] ?></div>
+      <input type="text" class="form-control <?php if (isset($err['name']))
+        echo 'is-invalid' ?>"" name=" name" placeholder="氏名" value="<?= $name ?>">
+      <div class="invalid-feedback">
+        <?= $err['name'] ?>
+      </div>
     </div>
     <div class="mb-3">
-      <input type="text" class="form-control <?php if (isset($err['email'])) echo 'is-invalid' ?>"" name=" email" placeholder="メールアドレス" value="<?= $email ?>">
-      <div class="invalid-feedback"><?= $err['email'] ?></div>
+      <input type="text" class="form-control <?php if (isset($err['email']))
+        echo 'is-invalid' ?>"" name=" email" placeholder="メールアドレス" value="<?= $email ?>">
+      <div class="invalid-feedback">
+        <?= $err['email'] ?>
+      </div>
     </div>
     <div class="mb-3">
-      <input type="text" class="form-control <?php if (isset($err['tel'])) echo 'is-invalid' ?>"" name=" tel" placeholder="電話番号" value="<?= $tel ?>">
-      <div class="invalid-feedback"><?= $err['tel'] ?></div>
+      <input type="text" class="form-control <?php if (isset($err['tel']))
+        echo 'is-invalid' ?>"" name=" tel" placeholder="電話番号" value="<?= $tel ?>">
+      <div class="invalid-feedback">
+        <?= $err['tel'] ?>
+      </div>
     </div>
     <div class="mb-3">
       <label for="exampleFormControlTextarea1" class="form-label">【5】 備考欄</label>
-      <textarea class="form-control <?php if (isset($err['comment'])) echo 'is-invalid' ?>"" name=" comment" rows="3" placeholder="備考欄"><?= $comment ?></textarea>
-      <div class="invalid-feedback"><?= $err['comment'] ?></div>
+      <textarea class="form-control <?php if (isset($err['comment']))
+        echo 'is-invalid' ?>"" name=" comment" rows="3" placeholder="備考欄"><?= $comment ?></textarea>
+      <div class="invalid-feedback">
+        <?= $err['comment'] ?>
+      </div>
     </div>
 
     <div class="d-grid gap-2">
@@ -181,7 +196,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
   </form>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
 </body>
 
 </html>
