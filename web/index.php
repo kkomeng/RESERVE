@@ -2,7 +2,7 @@
 require_once 'functions.php';
 
 // DBに接続
-$pdo = new PDO('mysql:dbname='.DB_NAME.';host='.DB_HOST.';', DB_USER, DB_PASSWORD);
+$pdo = new PDO('mysql:dbname=' . DB_NAME . ';host=' . DB_HOST . ';', DB_USER, DB_PASSWORD);
 $pdo->query('SET NAMES utf8');
 
 // ショップデータを取得
@@ -13,7 +13,7 @@ $shop = $stmt->fetch();
 
 // 予約日選択肢配列
 $reserve_date_array = array();
-for ($i=0; $i<=$shop['reservable_date']; $i++) {
+for ($i = 0; $i <= $shop['reservable_date']; $i++) {
   // 対象日を取得
   $target_date = strtotime("+{$i} day");
 
@@ -22,7 +22,7 @@ for ($i=0; $i<=$shop['reservable_date']; $i++) {
 }
 
 // 人数日選択肢配列
-for ($i=1; $i<=$shop['max_reserve_num']; $i++) {
+for ($i = 1; $i <= $shop['max_reserve_num']; $i++) {
   // 配列に設定
   $reserve_num_array[$i] = $i;
 }
@@ -30,7 +30,7 @@ for ($i=1; $i<=$shop['max_reserve_num']; $i++) {
 // 予約時間選択肢配列
 $reserve_time_array = array();
 for ($i = date('G', strtotime($shop['start_time'])); $i <= date('G', strtotime($shop['end_time'])); $i++) {
-  $reserve_time_array[sprintf('%02d', $i).':00'] = sprintf('%02d', $i).':00';
+  $reserve_time_array[sprintf('%02d', $i) . ':00'] = sprintf('%02d', $i) . ':00';
 }
 
 session_start();
@@ -92,19 +92,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $err['comment'] = '備考欄は2000文字以内で入力してください。';
   }
 
+  // エラーが無ければ次の処理に進
   if (empty($err)) {
-    // 各種入力値をセッション変数に保存する
-    $_SESSION['RESERVE']['reserve_date'] = $reserve_date;
-    $_SESSION['RESERVE']['reserve_num'] = $reserve_num;
-    $_SESSION['RESERVE']['reserve_time'] = $reserve_time;
-    $_SESSION['RESERVE']['name'] = $name;
-    $_SESSION['RESERVE']['email'] = $email;
-    $_SESSION['RESERVE']['tel'] = $tel;
-    $_SESSION['RESERVE']['comment'] = $comment;
+    // DBのreserveテーブルからその日時の「予約成立済人数」を取得
+    $stmt = $pdo->prepare("SELECT SUM(reserve_num) FROM reserve
+    WHERE DATE_FORMAT(reserve_date, '%Y%m%d') = :reserve_date AND DATE_FORMAT(reserve_time, '%H:%i') = :reserve_time
+    GROUP BY reserve_date, reserve_time LIMIT 1");
+    $stmt->bindValue(':reserve_date', $reserve_date, PDO::PARAM_STR);
+    $stmt->bindValue(':reserve_time', $reserve_time, PDO::PARAM_STR);
+    $stmt->execute();
+    $reserve_count = $stmt->fetchColumn();
 
-    // 予約確認画面へ遷移する
-    header('Location: ./confirm.php');
-    exit;
+    // 1時間当たりの予約上限チェック
+    if ($reserve_count && ($reserve_count + $reserve_num) > $shop['max_reserve_num']) {
+      $err['common'] = 'この日時はすでに予約が埋まっております。';
+    }
+
+    if (empty($err)) {
+      // 各種入力値をセッション変数に保存する
+      $_SESSION['RESERVE']['reserve_date'] = $reserve_date;
+      $_SESSION['RESERVE']['reserve_num'] = $reserve_num;
+      $_SESSION['RESERVE']['reserve_time'] = $reserve_time;
+      $_SESSION['RESERVE']['name'] = $name;
+      $_SESSION['RESERVE']['email'] = $email;
+      $_SESSION['RESERVE']['tel'] = $tel;
+      $_SESSION['RESERVE']['comment'] = $comment;
+
+      // 予約確認画面へ遷移する
+      header('Location: ./confirm.php');
+      exit;
+    }
   }
 } else {
   // セッションに入力情報がある場合は取得する
@@ -153,6 +170,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <h1>ご来店予約</h1>
 
   <form class="m-3" method="POST">
+
+    <?php if (isset($err['common'])): ?>
+      <div class="alert alert-danger" role="alert">
+        <?= $err['common'] ?>
+      </div>
+    <?php endif; ?>
+
     <div class="mb-3">
       <label for="exampleFormControlInput1" class="form-label">【1】 予約日を選択</label>
       <?= arrayToSelect('reserve_date', $reserve_date_array, $reserve_date) ?>
