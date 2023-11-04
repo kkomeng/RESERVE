@@ -1,28 +1,37 @@
 <?php
 require_once 'functions.php';
 
-// TODO:予約日選択肢配列
-$reserve_date_array = array(
-  "20220601" => "6/1",
-  "20220602" => "6/2",
-  "20220603" => "6/3",
-);
+// DBに接続
+$pdo = new PDO('mysql:dbname='.DB_NAME.';host='.DB_HOST.';', DB_USER, DB_PASSWORD);
+$pdo->query('SET NAMES utf8');
 
-// TODO:人数日選択肢配列
-$reserve_num_array = array(
-  "1" => "1",
-  "2" => "2",
-  "3" => "3",
-);
+// ショップデータを取得
+$stmt = $pdo->prepare('SELECT * FROM shop WHERE id=:id');
+$stmt->bindValue(':id', 1, PDO::PARAM_INT);
+$stmt->execute();
+$shop = $stmt->fetch();
 
-// TODO:予約時間選択肢配列
-$reserve_time_array = array(
-  "12:00" => "12:00",
-  "13:00" => "13:00",
-  "14:00" => "14:00",
-);
+// 予約日選択肢配列
+$reserve_date_array = array();
+for ($i=0; $i<=$shop['reservable_date']; $i++) {
+  // 対象日を取得
+  $target_date = strtotime("+{$i} day");
 
-$test = "";
+  // 配列に設定
+  $reserve_date_array[date('Ymd', $target_date)] = date('n/j', $target_date);
+}
+
+// 人数日選択肢配列
+for ($i=1; $i<=$shop['max_reserve_num']; $i++) {
+  // 配列に設定
+  $reserve_num_array[$i] = $i;
+}
+
+// 予約時間選択肢配列
+$reserve_time_array = array();
+for ($i = date('G', strtotime($shop['start_time'])); $i <= date('G', strtotime($shop['end_time'])); $i++) {
+  $reserve_time_array[sprintf('%02d', $i).':00'] = sprintf('%02d', $i).':00';
+}
 
 session_start();
 
@@ -162,21 +171,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="mb-3">
       <label for="exampleFormControlInput1" class="form-label">【4】 予約者情報を入力</label>
       <input type="text" class="form-control <?php if (isset($err['name']))
-        echo 'is-invalid' ?>"" name=" name" placeholder="氏名" value="<?= $name ?>">
+        echo 'is-invalid' ?>" name=" name" placeholder="氏名" value="<?= $name ?>">
       <div class="invalid-feedback">
         <?= $err['name'] ?>
       </div>
     </div>
     <div class="mb-3">
       <input type="text" class="form-control <?php if (isset($err['email']))
-        echo 'is-invalid' ?>"" name=" email" placeholder="メールアドレス" value="<?= $email ?>">
+        echo 'is-invalid' ?>" name=" email" placeholder="メールアドレス" value="<?= $email ?>">
       <div class="invalid-feedback">
         <?= $err['email'] ?>
       </div>
     </div>
     <div class="mb-3">
       <input type="text" class="form-control <?php if (isset($err['tel']))
-        echo 'is-invalid' ?>"" name=" tel" placeholder="電話番号" value="<?= $tel ?>">
+        echo 'is-invalid' ?>" name=" tel" placeholder="電話番号" value="<?= $tel ?>">
       <div class="invalid-feedback">
         <?= $err['tel'] ?>
       </div>
@@ -184,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="mb-3">
       <label for="exampleFormControlTextarea1" class="form-label">【5】 備考欄</label>
       <textarea class="form-control <?php if (isset($err['comment']))
-        echo 'is-invalid' ?>"" name=" comment" rows="3" placeholder="備考欄"><?= $comment ?></textarea>
+        echo 'is-invalid' ?>" name=" comment" rows="3" placeholder="備考欄"><?= $comment ?></textarea>
       <div class="invalid-feedback">
         <?= $err['comment'] ?>
       </div>
