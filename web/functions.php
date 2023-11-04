@@ -1,5 +1,5 @@
 <?php
-require_once '../config/config.php';
+require_once(dirname(__FILE__).'/../config/config.php');
 
 // 引数で与えられた配列を基にプルダウンリストを精製する
 function arrayToSelect($inputName, $srcArray, $selectedIndex = "") {
