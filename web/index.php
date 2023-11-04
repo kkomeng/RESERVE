@@ -108,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       $err['common'] = 'この日時はすでに予約が埋まっております。';
     }
 
+    // エラーが無ければ次の処理に進む
     if (empty($err)) {
       // 各種入力値をセッション変数に保存する
       $_SESSION['RESERVE']['reserve_date'] = $reserve_date;
@@ -144,9 +145,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $comment = '';
   }
 }
-
-
-
 
 ?>
 
