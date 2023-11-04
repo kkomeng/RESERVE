@@ -1,3 +1,44 @@
+<?php
+require_once(dirname(__FILE__) . "/../functions.php");
+
+// DBに接続
+$pdo = new PDO('mysql:dbname=' . DB_NAME . ';host=' . DB_HOST . ';', DB_USER, DB_PASSWORD);
+$pdo->query('SET NAMES utf8');
+
+$year = @$_GET['year'];
+$month = @$_GET['month'];
+
+if (!$year) {
+  $year = date('Y');
+}
+
+if (!$month) {
+  $year = date('m');
+}
+
+// 対象年月の予約データを取得
+$stmt = $pdo->prepare("SELECT * FROM reserve
+WHERE DATE_FORMAT(reserve_date, '%Y%m') = :yyyymm
+ORDER BY reserve_date, reserve_time");
+$stmt->bindValue(':yyyymm', $year . $month, PDO::PARAM_STR);
+$stmt->execute();
+$reserve_list = $stmt->fetchAll();
+
+// 年プルダウンの構築
+$year_array = array();
+$current_year = date('Y');
+for ($i = ($current_year - 1); $i <= ($current_year + 3); $i++) {
+  $year_array[$i] = $i . '年';
+}
+
+// 月プルダウンの構築
+$month_array = array();
+for ($i = 1; $i <= 12; $i++) {
+  $month_array[sprintf('%02d', $i)] = $i . '月';
+}
+
+?>
+
 <!doctype html>
 <html lang="ja">
 
@@ -28,57 +69,53 @@
 
   <h1>予約リスト</h1>
 
-  <div class="row m-3">
-    <div class="col">
-      <select class="form-select" aria-label="Default select example">
-        <option selected>2022年</option>
-        <option value="1">One</option>
-        <option value="2">Two</option>
-        <option value="3">Three</option>
-      </select>
+  <form id="filter-form" method="GET">
+    <div class="row m-3">
+      <div class="col">
+        <?= arrayToSelect('year', $year_array, $year) ?>
+      </div>
+      <div class="col">
+        <?= arrayToSelect('month', $month_array, $month) ?>
+      </div>
     </div>
-    <div class="col">
-      <select class="form-select" aria-label="Default select example">
-        <option selected>1月</option>
-        <option value="1">One</option>
-        <option value="2">Two</option>
-        <option value="3">Three</option>
-      </select>
-    </div>
-  </div>
+  </form>
 
+  <?php if (!$reserve_list): ?>
+    <div class="alert alert-warning" role="alert">予約データがありません。</div>
+    <?php else: ?>
   <table class="table">
     <tbody>
-      <tr>
-        <td>1/1(土)</td>
-        <td>12:00</td>
-        <td>テスト太郎 4名<br>
-          XXX@XXX.xxx<br>
-          111-111-1111<br>
-          概要欄に記載された文面・・・・・・・</td>
-      </tr>
-      <tr>
-        <td>1/1(土)</td>
-        <td>12:00</td>
-        <td>テスト太郎　4名<br>
-          XXX@XXX.xxx<br>
-          111-111-1111<br>
-          概要欄に記載された文面・・・・・・・</td>
-      </tr>
-      <tr>
-        <td>1/1(土)</td>
-        <td>12:00</td>
-        <td>テスト太郎　4名<br>
-          XXX@XXX.xxx<br>
-          111-111-1111<br>
-          概要欄に記載された文面・・・・・・・</td>
-      </tr>
+      <?php foreach ($reserve_list as $reserve): ?>
+        <tr>
+          <td>
+            <?= format_date($reserve['reserve_date']) ?>
+          </td>
+          <td>
+            <?= format_time($reserve['reserve_time']) ?>
+          </td>
+          <td>
+            <?= $reserve['name'] ?>　<?= $reserve['reserve_num'] ?>名<br>
+            <?= $reserve['email'] ?><br>
+            <?= $reserve['tel'] ?><br>
+            <?= mb_strimwidth($reserve['comment'], 0, 90, '...') ?>
+          </td>
+        </tr>
+      <?php endforeach; ?>
     </tbody>
   </table>
+<?php endif; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
     crossorigin="anonymous"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script>
+    $('.form-select').change(function() {
+      $('#filter-form').submit();
+    });
+  </script>
 </body>
 
 </html>
